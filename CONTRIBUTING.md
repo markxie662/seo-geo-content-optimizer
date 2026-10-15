@@ -4,7 +4,7 @@
 
 ## 报告问题
 
-使用 [Issue 表单](https://github.com/markxie662/seo-geo-content/issues/new/choose)，提供：
+使用 [Issue 表单](https://github.com/markxie662/seo-geo-content-optimizer/issues/new/choose)，提供：
 
 - 受影响的技能版本或 commit、运行日期和宿主工具。
 - 原始请求、最少必要的页面快照或公开 URL。

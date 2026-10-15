@@ -17,8 +17,8 @@ class RepositoryChecks(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.write("SKILL.md", "---\nname: seo-geo-content\ndescription: Content planning\n---\n# Skill\n")
-        self.write("agents/openai.yaml", "interface:\n  default_prompt: Use $seo-geo-content\npolicy:\n  allow_implicit_invocation: true\n")
+        self.write("SKILL.md", "---\nname: seo-geo-content-optimizer\ndescription: Content planning\n---\n# Skill\n")
+        self.write("agents/openai.yaml", "interface:\n  default_prompt: Use $seo-geo-content-optimizer\npolicy:\n  allow_implicit_invocation: true\n")
         self.write("evals/fixtures/example.md", "[simulated](/not-in-the-repo)\n")
         self.write("evals/reports/example.md", "An archived report.\n")
         self.case = dict(id="example", fixture="fixtures/example.md", report="reports/example.md", scope="One page", checks=["Review scope"])
@@ -66,8 +66,34 @@ class RepositoryChecks(unittest.TestCase):
         self.write("README.md", "[![preview](image.png)](missing.md)")
         self.assertIn("missing.md", self.errors())
 
+    def test_nested_list_links_and_actual_indented_code(self):
+        self.write("README.md", "    [code](top-code.md)\n\n- Resources\n    - [nested](nested-missing.md)\n\n- More\n    [continued](continued-missing.md)\n\n      [code](list-code.md)\n")
+        errors = self.errors()
+        self.assertIn("nested-missing.md", errors)
+        self.assertIn("continued-missing.md", errors)
+        self.assertNotIn("top-code.md", errors)
+        self.assertNotIn("list-code.md", errors)
+
+    def test_directory_navigation_is_allowed_but_images_must_be_files(self):
+        (self.root / "resources").mkdir()
+        self.write("README.md", "[directory](resources)\n")
+        self.assertEqual(checker.validate(self.root), [])
+        for extension in ["svg", "png"]:
+            (self.root / f"cover.{extension}").mkdir()
+            self.write("README.md", f"![cover](cover.{extension})\n")
+            self.assertIn(f"cover.{extension}", self.errors())
+
+    def test_markdown_directories_and_read_errors_are_reported(self):
+        (self.root / "directory.md").mkdir()
+        (self.root / "invalid.md").write_bytes(b"\xff\xfe")
+        result = subprocess.run([sys.executable, checker.__file__, str(self.root)], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("directory.md", result.stdout)
+        self.assertIn("invalid.md", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_metadata_missing_invalid_or_unsafe_yaml(self):
-        for text in ["No front matter", "---\nname: [\n---", "---\nname: !!python/object:bad {}\n---", "---\nname: Bad_Name\n---", "---\nname: another-skill\ndescription: ok\n---", "---\nname: seo-geo-content\ndescription: []\n---"]:
+        for text in ["No front matter", "---\nname: [\n---", "---\nname: !!python/object:bad {}\n---", "---\nname: Bad_Name\n---", "---\nname: another-skill\ndescription: ok\n---", "---\nname: seo-geo-content-optimizer\ndescription: []\n---"]:
             with self.subTest(text=text):
                 self.write("SKILL.md", text)
                 self.assertIn("SKILL.md", self.errors())
@@ -119,6 +145,40 @@ class RepositoryChecks(unittest.TestCase):
                 self.case["report"] = value
                 self.save_manifest()
                 self.assertIn("report", self.errors())
+
+    def test_manifest_archive_paths_are_unique(self):
+        self.manifest["cases"].append(dict(self.case, id="second"))
+        self.save_manifest()
+        errors = self.errors()
+        self.assertIn("fixture", errors)
+        self.assertIn("report", errors)
+        self.assertIn("duplicate", errors)
+
+    def test_manifest_matches_all_archived_markdown_files(self):
+        self.write("evals/fixtures/second.md", "Another fixture")
+        self.write("evals/reports/second.md", "Another report")
+        errors = self.errors()
+        self.assertIn("fixtures/second.md", errors)
+        self.assertIn("reports/second.md", errors)
+        self.manifest["cases"].append(dict(self.case, id="second", fixture="fixtures/second.md", report="reports/second.md"))
+        self.save_manifest()
+        self.assertEqual(checker.validate(self.root), [])
+
+    def test_manifest_rejects_wrong_archive_role(self):
+        self.case["fixture"], self.case["report"] = self.case["report"], self.case["fixture"]
+        self.save_manifest()
+        self.assertIn("fixture", self.errors())
+        self.assertIn("report", self.errors())
+
+    def test_manifest_materials_require_nonblank_utf8(self):
+        for field in ["fixture", "report"]:
+            path = self.root / "evals" / self.case[field]
+            original = path.read_text()
+            for data in [b" \n\t\n", b"\xff\xfe"]:
+                with self.subTest(field=field, data=data):
+                    path.write_bytes(data)
+                    self.assertIn(field, self.errors())
+            path.write_text(original)
 
     def test_cli_success_failure_and_default_root(self):
         with patch.object(checker, "__file__", str(self.root / "scripts/validate_repository.py")), contextlib.redirect_stdout(io.StringIO()):

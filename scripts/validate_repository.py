@@ -13,17 +13,30 @@ SKIP = {".git", ".venv", "outputs", "__pycache__"}
 
 
 def markdown_targets(text):
-    visible, fence = [], None
-    for line in text.splitlines():
-        candidate = re.sub(r"^ {0,3}(?:[-+*]|\d+[.)]) +", "", line)
-        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", candidate)
+    visible, fence, lists = [], None, []
+    for raw in text.splitlines():
+        line = raw.expandtabs(4)
         if fence:
-            if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not marker[2].strip():
+            marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line[fence[1]:])
+            if marker and marker[1][0] == fence[0][0] and len(marker[1]) >= len(fence[0]) and not marker[2].strip():
                 fence = None
-        elif marker:
-            fence = marker[1]
-        elif not line.startswith(("    ", "\t")):
-            visible.append(line)
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        while lists and line.strip() and indent < lists[-1]:
+            lists.pop()
+        base = lists[-1] if lists else 0
+        if indent >= base + 4:
+            continue
+        item = re.match(r"^ *(?:[-+*]|\d+[.)]) +", line)
+        if item:
+            base = item.end()
+            lists.append(base)
+        candidate = line[base:]
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", candidate)
+        if marker:
+            fence = (marker[1], base)
+        else:
+            visible.append(candidate)
     text = re.sub(r"(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)", "", "\n".join(visible), flags=re.S)
     # Overlapping matches retain both destinations in a linked image.
     pattern = r"(?=(?<!\\)\[(?:[^\[\]\n]|\[[^]\n]*\])*\]\(\s*(<[^>]*>|(?:\\.|[^()\s]|\([^()]*\))+))"
@@ -54,16 +67,16 @@ def validate(root):
         return yaml.safe_load(match[1])
 
     skill = load("SKILL.md", front_matter)
-    if skill.get("name") != "seo-geo-content":
-        error("SKILL.md/name", "must be seo-geo-content (lowercase hyphenated name)")
+    if skill.get("name") != "seo-geo-content-optimizer":
+        error("SKILL.md/name", "must be seo-geo-content-optimizer (lowercase hyphenated name)")
     description = skill.get("description")
     if not isinstance(description, str) or not description.strip():
         error("SKILL.md/description", "must be a nonempty string")
     agent = load("agents/openai.yaml", yaml.safe_load)
     interface, policy = agent.get("interface"), agent.get("policy")
     prompt = interface.get("default_prompt") if isinstance(interface, dict) else None
-    if not isinstance(prompt, str) or "$seo-geo-content" not in prompt:
-        error("agents/openai.yaml/interface.default_prompt", "must include $seo-geo-content")
+    if not isinstance(prompt, str) or "$seo-geo-content-optimizer" not in prompt:
+        error("agents/openai.yaml/interface.default_prompt", "must include $seo-geo-content-optimizer")
     if not isinstance(policy, dict) or policy.get("allow_implicit_invocation") is not True:
         error("agents/openai.yaml/policy.allow_implicit_invocation", "must be boolean true")
 
@@ -71,13 +84,19 @@ def validate(root):
         relative = path.relative_to(root)
         if SKIP.intersection(relative.parts) or relative.parts[:2] == ("evals", "fixtures"):
             continue
-        for target in markdown_targets(path.read_text(encoding="utf-8")):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            error(relative, f"cannot read Markdown: {str(exc).splitlines()[0]}")
+            continue
+        for target in markdown_targets(text):
             target = target[1:-1] if target.startswith("<") else target
             if re.match(r"(?:[a-z][a-z0-9+.-]*:|[/#?])", target, re.I):
                 continue
             target = unquote(re.sub(r"\\([\\() ])", r"\1", target.split("#")[0].split("?")[0]))
             destination = (path.parent / target).resolve()
-            if not destination.is_relative_to(root) or not destination.exists():
+            file_target = destination.suffix.lower() in {".md", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".avif"}
+            if not destination.is_relative_to(root) or not destination.exists() or (file_target and not destination.is_file()):
                 error(relative, f"broken local link: {target}")
 
     manifest = load("evals/cases.json", json.loads)
@@ -96,6 +115,7 @@ def validate(root):
         error("evals/cases.json/cases", "must be a nonempty list")
         cases = []
     seen, evals = set(), (root / "evals").resolve()
+    archived = {"fixture": set(), "report": set()}
     for index, case in enumerate(cases):
         label = f"evals/cases.json/cases[{index}]"
         if not isinstance(case, dict):
@@ -118,8 +138,30 @@ def validate(root):
                 error(f"{label}.{field}", "must be a relative path within evals/")
                 continue
             destination = (evals / value).resolve()
-            if not destination.is_relative_to(evals) or not destination.is_file() or not destination.stat().st_size:
-                error(f"{label}.{field}", "must reference a nonempty file within evals/")
+            if not destination.is_relative_to(evals):
+                error(f"{label}.{field}", "path escapes evals/")
+                continue
+            if destination in archived[field]:
+                error(f"{label}.{field}", f"duplicate archive path: {value}")
+            archived[field].add(destination)
+            try:
+                if not destination.read_text(encoding="utf-8").strip():
+                    raise ValueError("file is blank")
+            except (OSError, UnicodeError, ValueError) as exc:
+                error(f"{label}.{field}", f"{value}: {str(exc).splitlines()[0]}")
+    for field, directory in (("fixture", "fixtures"), ("report", "reports")):
+        actual = set()
+        for path in (evals / directory).rglob("*.md"):
+            if path.is_file():
+                resolved = path.resolve()
+                if resolved.is_relative_to(evals):
+                    actual.add(resolved)
+                else:
+                    error(path.relative_to(root), "archive path escapes evals/")
+        for path in sorted(actual - archived[field]):
+            error(f"evals/cases.json/{field}", f"unlisted archive: {path.relative_to(evals)}")
+        for path in sorted(archived[field] - actual):
+            error(f"evals/cases.json/{field}", f"not a Markdown file in {directory}/: {path.relative_to(evals)}")
     return errors
 
 

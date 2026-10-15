@@ -1,10 +1,10 @@
-![SEO / GEO — website content, grounded in evidence](docs/assets/cover.svg)
+![SEO/GEO Content Optimizer — 网站内容规划与页面改写](docs/assets/cover.svg)
 
-# SEO/GEO Content
+# SEO/GEO Content Optimizer
 
 **从一个网址，到有证据的整站内容规划与完整页面改稿。**
 
-[![Repository checks](https://github.com/markxie662/seo-geo-content/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/markxie662/seo-geo-content/actions/workflows/validate.yml)
+[![Repository checks](https://github.com/markxie662/seo-geo-content-optimizer/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/markxie662/seo-geo-content-optimizer/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-27615B.svg)](LICENSE)
 
 一个面向 Google 搜索和生成式搜索的 Agent Skill。输入网站网址，识别页面职责与内容缺口，排列优化任务，并交付一个重点页面的完整改稿。适用于企业、SaaS、电商、博客和文档站。
@@ -32,19 +32,40 @@
 在 Codex 对话中发送以下**安装请求**，这不是终端命令：
 
 ```text
-使用 $skill-installer 从 https://github.com/markxie662/seo-geo-content 安装技能。
-仓库根目录包含 SKILL.md；请安装到 ~/.agents/skills/seo-geo-content，
-保留 SKILL.md、agents、assets、references 和 LICENSE。
+使用 $skill-installer 安装 https://github.com/markxie662/seo-geo-content-optimizer。
+仓库根目录就是技能目录。调用 GitHub 安装脚本时明确使用：
+--repo markxie662/seo-geo-content-optimizer --ref main --path .
+--name seo-geo-content-optimizer --dest "$HOME/.agents/skills"
+安装后确认 ~/.agents/skills/seo-geo-content-optimizer/SKILL.md 存在。
 ```
 
-也可以在仓库的 **Code → Download ZIP** 下载完整目录，解压后将技能文件夹放到 `~/.agents/skills/seo-geo-content/`，确保该目录下直接存在 `SKILL.md`。同名目录已有内容时，先保留旧版。
+也可以在仓库的 **Code → Download ZIP** 下载完整目录，解压后将技能文件夹放到 `~/.agents/skills/seo-geo-content-optimizer/`，确保该目录下直接存在 `SKILL.md`。同名目录已有内容时，先保留旧版。
 
 当前 [OpenAI Docs](https://learn.chatgpt.com/docs/build-skills) 将 `~/.agents/skills` 列为用户级技能目录。Codex 会自动检测新技能；未出现时再重启。安装路径与行为核验于 **2026-10-15**。
+
+安装器的 `--dest` 是技能安装基目录，`--name` 是其下的新目录名。安装根目录时需同时指定 `--path .` 和名称，避免推导出无效名称或重复嵌套目录。
+
+<details>
+<summary>从旧名称 seo-geo-content 迁移</summary>
+
+仓库和调用名已统一为 `seo-geo-content-optimizer`，新调用为 `$seo-geo-content-optimizer`。GitHub 的仓库改名不会自动更新本机已安装技能。
+
+按上方步骤安装新目录；若旧目录有自定义内容，先备份到技能扫描目录之外。确认新版本可用后，将旧目录移出扫描位置，避免同时选中两个版本。
+
+已有 Git 克隆可更新远程地址，无需重新克隆：
+
+```sh
+git remote set-url origin https://github.com/markxie662/seo-geo-content-optimizer.git
+```
+
+旧仓库链接按 [GitHub 重命名规则](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository) 重定向，后续请使用新地址。历史测试输入和报告中的旧调用名会保留，以便复查。
+
+</details>
 
 ### 2. 给出网址与目标
 
 ```text
-使用 $seo-geo-content 分析 https://example.com，制定整站内容优化规划，
+使用 $seo-geo-content-optimizer 分析 https://example.com，制定整站内容优化规划，
 并完整重写最值得优先改进的页面。
 
 目标受众：中小企业采购者
@@ -54,10 +75,12 @@
 
 网址是必需输入，其余信息可选。默认抽样深入阅读最多 12 个代表页面；样本与未验证范围会写入报告。报告默认保存在当前工作区的 `outputs/seo-geo/<host>/<日期>/report.md`。
 
+指定改稿页会优先读取并纳入预算；材料不足时保留指定范围，说明可完成部分和补充需求。SEO 覆盖表用于内部自检，完整逐项明细在用户要求时再附上。
+
 单页任务可以这样提：
 
 ```text
-使用 $seo-geo-content 只优化这篇英文教程：<页面网址>。
+使用 $seo-geo-content-optimizer 只优化这篇英文教程：<页面网址>。
 保留作者声音，提供完整英文正文、中文编辑说明和缺失证据清单。
 ```
 
@@ -69,7 +92,7 @@
 
 ## 实际输出
 
-下面是已经执行过的**离线模拟案例**。公司、产品及 `.example` 域名均为虚构；输入快照和原始输出都已保留，可以逐项对照。
+下面是初版已经执行过的**离线模拟案例**。公司、产品及 `.example` 域名均为虚构；输入快照和原始输出都已保留，可以逐项对照。改名修订版另有两项实际回归，见[验证记录](docs/validation.md#改名修订版的实际回归)。
 
 | 场景 | 查看输入 | 查看实际报告 | 重点 |
 |---|---|---|---|
@@ -122,7 +145,7 @@ python scripts/validate_repository.py
 python -m unittest discover -s tests -v
 ```
 
-运行结果见 [GitHub Actions](https://github.com/markxie662/seo-geo-content/actions/workflows/validate.yml)。自动检查与独立代理的历史定性验收分别记录，详情见 [验证记录](docs/validation.md)。
+运行结果见 [GitHub Actions](https://github.com/markxie662/seo-geo-content-optimizer/actions/workflows/validate.yml)。自动检查与独立代理的定性验收分别记录，详情见 [验证记录](docs/validation.md)。
 
 ## 仓库导航
 
@@ -137,4 +160,4 @@ python -m unittest discover -s tests -v
 
 由 [@markxie662](https://github.com/markxie662) 维护，原创内容采用 [MIT License](LICENSE)。引用资料与第三方商标保留各自的权利与许可。
 
-发现内容误判、安装问题或官方规则变化，请[提交 Issue](https://github.com/markxie662/seo-geo-content/issues/new/choose)，附复现材料或官方来源；贡献方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+发现内容误判、安装问题或官方规则变化，请[提交 Issue](https://github.com/markxie662/seo-geo-content-optimizer/issues/new/choose)，附复现材料或官方来源；贡献方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。

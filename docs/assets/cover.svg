@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
-  <title id="title">SEO / GEO Content</title>
+  <title id="title">SEO / GEO Content Optimizer</title>
   <desc id="desc">An agent skill for website content planning and page rewriting, grounded in evidence.</desc>
   <rect width="1280" height="360" rx="18" fill="#112D31"/>
   <path d="M780 0H1280V360H930Z" fill="#193B3D"/>
@@ -7,7 +7,7 @@
     <rect x="56" y="46" width="108" height="26" rx="5" fill="#214C4D"/>
     <text x="70" y="64" font-size="12" font-weight="700" letter-spacing="1.4" fill="#B4D5CD">AGENT SKILL</text>
     <text x="54" y="153" font-size="68" font-weight="700" letter-spacing="-2" fill="#FAF8F0">SEO / GEO</text>
-    <text x="58" y="202" font-size="26" fill="#D3E1DC">Website content, grounded in evidence.</text>
+    <text x="58" y="202" font-size="26" fill="#D3E1DC">Content Optimizer</text>
     <path d="M58 240H705" stroke="#365457"/>
     <g font-size="15" fill="#B4CEC8">
       <text x="58" y="278">RESEARCH</text>
