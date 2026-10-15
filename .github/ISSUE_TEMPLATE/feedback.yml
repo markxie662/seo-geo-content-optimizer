@@ -1,0 +1,35 @@
+name: 问题或资料更新
+description: 报告内容误判、安装问题或官方规则变化
+title: "[反馈] "
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: 问题类型
+      options:
+        - 内容判断或交付问题
+        - 官方资料或平台规则更新
+        - 安装或仓库检查失败
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 版本与运行环境
+      description: 技能 commit 或版本、运行日期、宿主工具；模型已知时请注明。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现材料或官方来源
+      description: 提供原始请求、最少必要快照或官方直链。请移除令牌、个人信息与未授权客户资料。
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 实际结果与预期行为
+      description: 说明哪里不准确、影响是什么，以及你期望的改进。
+    validations:
+      required: true

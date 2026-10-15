@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+  <title id="title">SEO / GEO Content</title>
+  <desc id="desc">An agent skill for website content planning and page rewriting, grounded in evidence.</desc>
+  <rect width="1280" height="360" rx="18" fill="#112D31"/>
+  <path d="M780 0H1280V360H930Z" fill="#193B3D"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="56" y="46" width="108" height="26" rx="5" fill="#214C4D"/>
+    <text x="70" y="64" font-size="12" font-weight="700" letter-spacing="1.4" fill="#B4D5CD">AGENT SKILL</text>
+    <text x="54" y="153" font-size="68" font-weight="700" letter-spacing="-2" fill="#FAF8F0">SEO / GEO</text>
+    <text x="58" y="202" font-size="26" fill="#D3E1DC">Website content, grounded in evidence.</text>
+    <path d="M58 240H705" stroke="#365457"/>
+    <g font-size="15" fill="#B4CEC8">
+      <text x="58" y="278">RESEARCH</text>
+      <text x="213" y="278">PLAN</text>
+      <text x="330" y="278">REWRITE</text>
+      <text x="487" y="278">REVIEW</text>
+    </g>
+    <g fill="#E3BD79">
+      <circle cx="182" cy="273" r="2.5"/>
+      <circle cx="299" cy="273" r="2.5"/>
+      <circle cx="456" cy="273" r="2.5"/>
+    </g>
+    <rect x="942" y="60" width="222" height="252" rx="11" fill="#0B2327" stroke="#3B5D5C" transform="rotate(8 1053 186)"/>
+    <rect x="892" y="45" width="232" height="263" rx="11" fill="#EDEEE4" transform="rotate(-5 1008 176)"/>
+    <rect x="901" y="48" width="232" height="263" rx="11" fill="#FAF8F0"/>
+    <rect x="925" y="74" width="56" height="5" rx="2.5" fill="#39736A"/>
+    <text x="925" y="114" font-size="21" font-weight="700" fill="#173D3C">Content plan</text>
+    <text x="925" y="138" font-size="12" fill="#60716B">Source / Context / Next step</text>
+    <g fill="#D8DFD4">
+      <rect x="951" y="168" width="148" height="6" rx="3"/>
+      <rect x="951" y="180" width="114" height="5" rx="2.5"/>
+      <rect x="951" y="209" width="148" height="6" rx="3"/>
+      <rect x="951" y="221" width="99" height="5" rx="2.5"/>
+      <rect x="951" y="250" width="132" height="6" rx="3"/>
+      <rect x="951" y="262" width="111" height="5" rx="2.5"/>
+    </g>
+    <g fill="none" stroke="#39736A" stroke-width="1.5">
+      <rect x="925" y="165" width="14" height="14" rx="3"/>
+      <rect x="925" y="206" width="14" height="14" rx="3"/>
+      <rect x="925" y="247" width="14" height="14" rx="3"/>
+      <path d="m928 172 3 3 5-6m-8 44 3 3 5-6m-8 44 3 3 5-6"/>
+    </g>
+  </g>
+</svg>

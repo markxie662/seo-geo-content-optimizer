@@ -1,5 +1,6 @@
 ---
 name: seo-geo-content
+license: MIT
 description: 基于线上网址做 SEO/GEO 网站内容诊断、整站内容规划和重点页面完整改稿。用于优化网站内容、页面分工、搜索意图覆盖，以及 Google、ChatGPT Search、Bing/Copilot、Perplexity 中的内容可理解性与引用价值。适配企业、SaaS、电商、博客和文档站；以内容规划为主，技术问题形成有证据的交接建议。
 ---
 
